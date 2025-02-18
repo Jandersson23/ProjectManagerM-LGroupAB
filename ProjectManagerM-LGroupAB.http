@@ -1,0 +1,6 @@
+@ProjectManagerM_LGroupAB_HostAddress = http://localhost:5285
+
+GET {{ProjectManagerM_LGroupAB_HostAddress}}/
+Accept: application/json
+
+###
