@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProjectManagerM_LGroupAB.Data;
 using ProjectManagerM_LGroupAB.Models;
+using ProjectManagerM_LGroupAB.Services;
 
 namespace ProjectManagerM_LGroupAB.Controllers
 {
@@ -10,30 +11,31 @@ namespace ProjectManagerM_LGroupAB.Controllers
 	[ApiController]
 	public class ProjectController : ControllerBase
 	{
-		private readonly AppDbContext _context;
+		private readonly IProjectService _projectService;
 
-		public ProjectController(AppDbContext context)
+		public ProjectController(IProjectService projectService)
 		{
-			_context = context;
+			_projectService = projectService;
 		}
 
 		[HttpGet]
-		public async Task<ActionResult<IEnumerable<Project>>> GetProjects()
+		public async Task<ActionResult<IEnumerable<Project>>> GetAllProjects()
 		{
-			return await _context.Projects.ToListAsync();
+			var projects = await _projectService.GetAllProjects();
+			return Ok(projects);
 		}
 
 		[HttpGet("{id}")]
-		public async Task<ActionResult<Project>> GetProjects(int id)
+		public async Task<ActionResult<Project>> GetProjectById(int id)
 		{
-			var project = await _context.Projects.FindAsync(id);
+			var project = await _projectService.GetProjectById(id);
 
 			if (project == null)
 			{
 				return NotFound();
 			}
 
-			return project;
+			return Ok(project);
 
 		}
 
@@ -41,22 +43,12 @@ namespace ProjectManagerM_LGroupAB.Controllers
 
 		public async Task<ActionResult<Project>> CreateProject(Project project)
 		{
-		
-			if (project == null)
-			{
-				return BadRequest("Fyll i alla projektfält");
-			}
 
-			project.ProjectNumber = $"P-{Guid.NewGuid().ToString().Substring(0, 5)}";
-			
-			_context.Projects.Add(project);
-
-			await _context.SaveChangesAsync();
-
-			return CreatedAtAction(nameof(GetProjects), new { id = project.Id }, project);
+			await _projectService.AddProject(project);
+			return CreatedAtAction(nameof(GetProjectById), new { id = project.Id }, project);
 		}
 
-		[HttpPut("{id}")] 
+		[HttpPut("{id}")]
 
 		public async Task<ActionResult> UppdateProject(int id, Project project)
 		{
@@ -66,12 +58,10 @@ namespace ProjectManagerM_LGroupAB.Controllers
 
 			}
 
-			_context.Entry(project).State = EntityState.Modified;
-
 			try
 			{
-				await _context.SaveChangesAsync();
-				return NoContent();
+
+				await _projectService.UpdateProject(project);
 			}
 
 			catch (DbUpdateConcurrencyException)
@@ -79,11 +69,22 @@ namespace ProjectManagerM_LGroupAB.Controllers
 				return Conflict(new { error = "Projektet ändras av någon annan, ladda om sidan och försök igen" });
 			}
 
-			catch(Exception ex)
+			return NoContent();
+		}
+
+		[HttpDelete("{id}")]
+
+		public async Task<ActionResult> DeleteProject (int id)
+		{
+			var project = await _projectService.GetProjectById(id);
+			
+			if (project == null)
 			{
-				Console.WriteLine($"Fel vid uppdatering: {ex.Message}");
-				return StatusCode(500, new { error = "Ett oväntat fel inträffade, försök igen senare!" });
+				return NotFound(new{error = "Project not found"  });
 			}
+
+			await DeleteProject(id);
+			return NoContent();
 		}
 
 
