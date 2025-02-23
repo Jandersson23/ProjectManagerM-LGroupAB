@@ -1,1 +1,3 @@
 # ProjectManagerM-LGroupAB
+
+Fick problem med npm paket som jag fastnade på hur länge som helst och jag höll på fram och tillbaka utan att komma vidare och fick ge mig här för nu och skicka in det jag hade, bara för att få in nåt....
