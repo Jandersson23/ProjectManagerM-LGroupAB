@@ -21,8 +21,21 @@ namespace ProjectManagerM_LGroupAB.Controllers
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<Project>>> GetAllProjects()
 		{
-			var projects = await _projectService.GetAllProjects();
-			return Ok(projects);
+			try
+			{
+				var projects = await _projectService.GetAllProjects();
+
+				return Ok(projects);
+			}
+
+			catch(Exception ex)
+			{
+				return StatusCode(500, new { error = ex.Message });
+			}
+
+			
+
+			
 		}
 
 		[HttpGet("{id}")]

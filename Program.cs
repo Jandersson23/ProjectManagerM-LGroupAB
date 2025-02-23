@@ -19,6 +19,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowFrontend",
+		policy =>
+		{
+			policy.WithOrigins("http://localhost:3000") // React-appen körs här
+				  .AllowAnyMethod()
+				  .AllowAnyHeader();
+		});
+});
+
 
 var app = builder.Build();
 
@@ -27,6 +38,7 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -39,5 +51,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 
-
+app.UseCors("AllowFrontend");
 app.Run();
